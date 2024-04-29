@@ -1,23 +1,27 @@
-version: '3.8'
+version: "3.8"
 
 services:
   ollama:
     image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
     volumes:
       - ${OLLAMA_VOLUME_PATH:-ollama}:/root/.ollama
-
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_HOST=http://backend:7878
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "7878:7878"
     environment:
       - OLLAMA_HOST=http://ollama:11434
       # Just remove `=xxx` to have the env variable passed forward
-      - OPENAI_API_KEY=xxx
+    env_file:
+      - stack.env
     depends_on:
       - ollama
 volumes:
